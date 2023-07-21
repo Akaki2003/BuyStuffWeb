@@ -46,7 +46,6 @@ app.UseStaticFiles(new StaticFileOptions()
 });
 app.MapControllers();
 
-//BuyStuffSeed.Initialize(app.Services);
 
 
 app.UseSwagger();
