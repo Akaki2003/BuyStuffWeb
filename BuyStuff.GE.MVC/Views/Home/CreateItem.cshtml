@@ -1,0 +1,61 @@
+﻿@model BuyStuff.GE.Application.Items.Requests.ItemRequestModel
+
+@{
+    ViewData["Title"] = "CreateItem";
+}
+
+<h1>Add Item</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateItem" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Images" class="col-sm-2 col-form-label"></label>
+                <div class="col-sm-10">
+                    <div class="custom-file">
+                        <input type="file" name="Images" class="form-control custom-file-input" />
+                        <label class="custom-file-label">Choose file</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" style="color: white; background-color: gray; padding: 5px; margin-top:10px; border-radius: 5px;margin-top:10px;">Back to List</a>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.custom-file-input').on("change", function () {
+                var fileName = $(this).val().split("\\").pop();
+                $(this).next('.custom-file-label').html(fileName);
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

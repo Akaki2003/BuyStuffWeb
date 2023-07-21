@@ -1,0 +1,45 @@
+﻿@model IEnumerable<BuyStuff.GE.MVC.Models.ItemModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<h1>BuyStuff Itemlist</h1>
+
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label for="SearchString">Search By Title:</label>
+        <input type="text" class="form-control" name="SearchString" value="@ViewData["filter"]" />
+        <input type="submit" value="Search" class="btn btn-primary" />
+    </div>
+</form>
+
+<p>
+    <a asp-action="CreateItem" class="btn btn-primary" style="background-color:#4900df; border-color:#0abc06; margin-top:5px;">Create New</a>
+</p>
+
+@foreach (var item in Model)
+{
+    <div style="margin-bottom: 20px;">
+        <div class="card gx-md-3" style="border: 3px solid #ccc; justify-content: space-between; display: flex; padding: 10px; margin-bottom: 3px;">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Title: @item.Title</h2>
+                </div>
+                <div class="col-md-6">
+                    @{
+                        string fullPath = item.Images.Count > 0 && !string.IsNullOrEmpty(item.Images[0].ImgName)
+                        ? "~/images/" + item.Images[0].ImgName
+                        : "~/images/noimage.jpg";
+                    }
+                    <img class="w-100 h-100 object-cover imageThumbnail" style="border-radius: 20px" src="@fullPath" asp-append-version="true" />
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <a asp-action="ViewDetails" class="btn btn-primary" style="background-color:#2a3b45; border-collor:#0abc06" asp-route-itemId="@item.Id">
+                View Details
+            </a>
+        </div>
+    </div>
+}
