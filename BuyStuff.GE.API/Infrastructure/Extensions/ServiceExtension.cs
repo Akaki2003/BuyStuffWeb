@@ -20,6 +20,10 @@ namespace BuyStuff.GE.API.Infrastructure.Extensions
             services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<IImageRepository, ImageRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         }
 
     }

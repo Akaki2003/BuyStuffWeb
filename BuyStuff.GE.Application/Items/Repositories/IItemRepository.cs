@@ -1,4 +1,5 @@
 ﻿using BuyStuff.GE.Domain.Items;
+using BuyStuff.GE.Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace BuyStuff.GE.Application.Items.Repositories
 {
     public interface IItemRepository
     {
-        Task<int> Create(Item item, CancellationToken cancellationToken);
+        Task<int> Create(Item item, string UserId, CancellationToken cancellationToken);
         Task<Item> GetItemById(int id, CancellationToken cancellationToken);
         Task<List<Item>> GetAllItems(CancellationToken cancellationToken);
         Task<List<Item>> GetItemsByName(string name, CancellationToken cancellationToken);

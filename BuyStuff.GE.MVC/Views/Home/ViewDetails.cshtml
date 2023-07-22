@@ -1,5 +1,8 @@
-﻿@model BuyStuff.GE.MVC.Models.ItemModel
-
+﻿@using System.Security.Claims;
+@model BuyStuff.GE.MVC.Models.ItemModel
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor _accessor
+@using System.Security.Claims;
+@using System.IdentityModel.Tokens.Jwt;
 @{
     ViewData["Title"] = "ViewDetails";
 }
@@ -68,14 +71,39 @@
             </dd>
         </dl>
         <div>
-            <a asp-action="DeleteItem" asp-route-itemId="@Model.Id"
-               style="color: white; background-color: red; padding: 10px; border-radius: 5px; margin-top:10px">Delete Item</a>
+            @{
+                var handler = new JwtSecurityTokenHandler();
+                var jwtTokenString = _accessor.HttpContext.Request.Cookies["jwt"];
+                if (@jwtTokenString != null)
+                {
+                    var jwtToken = handler.ReadJwtToken(jwtTokenString);
+                    Claim nameIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "nameid");
+                    var itemUserId = nameIdClaim?.Value;
+                    var x = _accessor.HttpContext.User.Identity as ClaimsIdentity;
+
+                    if (itemUserId != null && Model.UserId == itemUserId)
+                    {
+                        <form method="post" asp-action="DeleteItem" asp-route-itemId="@Model.Id">
+                            <button type="submit" style="color: white; background-color: red; padding: 10px; border-radius: 5px; margin-top: 10px">Delete Item</button>
+                        </form>
+                        <a asp-action="EditItem" asp-route-itemId="@Model.Id" style="color: white; background-color: green; padding: 5px; margin-top:10px; border-radius: 5px; margin-right: 5px;">Edit Item</a>
+                    }
+                    else
+                    {
+                        <button type="button" disabled style="color: white; background-color: #ff000054; padding: 10px; border-radius: 5px; margin-top: 10px">Delete Item</button>
+                        <button type="button" disabled style="color: white; background-color: #65956594; padding: 10px; border-radius: 5px; margin-top: 10px">Edit Item</button>
+                    }
+                }
+                else
+                {
+                    <button type="button" disabled style="color: white; background-color: #ff000054; padding: 10px; border-radius: 5px; margin-top: 10px">Delete Item</button>
+                    <button type="button" disabled style="color: white; background-color: #65956594; padding: 10px; border-radius: 5px; margin-top: 10px">Edit Item</button>
+                }
+            }
+          
         </div>
 
         <div class="button-row">
-            @Html.ActionLink("Edit", "EditItem", new { itemId = Model.Id },
-            new { style = "color: white; background-color: green; padding: 5px; margin-top:10px; border-radius: 5px; margin-right: 5px;" })
-
             <a asp-action="Index" style="color: white; background-color: gray; padding: 5px; margin-top:10px; border-radius: 5px ;margin-top:10px;">Back to List</a>
         </div>
     </div>

@@ -25,7 +25,7 @@ namespace BuyStuff.GE.Application.Items
         }
 
 
-        public async Task<int> CreateItem(ItemRequestModel itemRequest, CancellationToken cancellationToken)
+        public async Task<int> CreateItem(ItemRequestModel itemRequest,string UserId, CancellationToken cancellationToken)
         {
             if (itemRequest != null)
             {
@@ -62,7 +62,7 @@ namespace BuyStuff.GE.Application.Items
                 
                 var itemToCreate = itemRequest.Adapt<Item>();
                 itemToCreate.Images = images.Count>0?images:itemToCreate.Images;
-                int id = await _unitOfWork.Item.Create(itemToCreate, cancellationToken);
+                int id = await _unitOfWork.Item.Create(itemToCreate, UserId, cancellationToken);
                 return id;
             }
             throw new Exception("Item is empty");

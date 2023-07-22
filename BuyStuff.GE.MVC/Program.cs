@@ -6,8 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<BaseUriConfiguration>(builder.Configuration.GetSection(nameof(BaseUriConfiguration)));
 
+builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ItemApiService>();
+builder.Services.AddScoped<AuthenticationApiService>();
 
 var app = builder.Build();
 

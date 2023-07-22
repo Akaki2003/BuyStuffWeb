@@ -3,16 +3,20 @@ using BuyStuff.GE.MVC.ApiServices;
 using BuyStuff.GE.MVC.Models;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BuyStuff.GE.MVC.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ItemApiService _itemApiService;
+        private readonly IHttpContextAccessor _accessor;
 
-        public HomeController(ItemApiService itemApiService)
+
+        public HomeController(ItemApiService itemApiService, IHttpContextAccessor accessor)
         {
             _itemApiService = itemApiService;
+            _accessor = accessor;
         }
 
         [HttpGet]
@@ -35,7 +39,7 @@ namespace BuyStuff.GE.MVC.Controllers
 
         public ActionResult CreateItem()
         {
-            return View();
+            return Request.Cookies["jwt"] != null ? View() : Unauthorized();
         }
 
         [HttpPost]
@@ -62,10 +66,16 @@ namespace BuyStuff.GE.MVC.Controllers
             return RedirectToAction(nameof(ViewDetails), new { itemId = item.Id });
         }
 
-        public async Task<IActionResult> DeleteItem(CancellationToken token, int itemId)
+        public async Task<IActionResult> DeleteItem( int itemId, CancellationToken token)
         {
             await _itemApiService.DeleteItem(itemId, token);
             return RedirectToAction(nameof(Index));
+        }
+
+        private string GetUserId()
+        {
+            var x = _accessor.HttpContext.User.Identity as ClaimsIdentity;
+            return x.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
         }
     }
 }

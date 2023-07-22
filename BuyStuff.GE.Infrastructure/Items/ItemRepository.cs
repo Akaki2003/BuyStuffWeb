@@ -12,8 +12,9 @@ namespace BuyStuff.GE.Infrastructure.Items
         {
         }
 
-        public async Task<int> Create(Item item, CancellationToken cancellationToken)
+        public async Task<int> Create(Item item,string UserId, CancellationToken cancellationToken)
         {
+            item.UserId = UserId;
             await AddAsync(item, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return item.Id;

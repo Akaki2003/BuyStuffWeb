@@ -1,8 +1,10 @@
 ﻿using BuyStuff.GE.Application.Items;
 using BuyStuff.GE.Application.Items.Requests;
 using BuyStuff.GE.Application.Items.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BuyStuff.GE.API.Controllers
 {
@@ -14,10 +16,12 @@ namespace BuyStuff.GE.API.Controllers
     public class ItemController : Controller
     {
         private readonly IItemService itemService;
+        private readonly IHttpContextAccessor _accessor;
 
-        public ItemController(IItemService itemService)
+        public ItemController(IItemService itemService, IHttpContextAccessor accessor)
         {
             this.itemService = itemService;
+            _accessor = accessor;
         }
 
         /// <summary>
@@ -58,10 +62,11 @@ namespace BuyStuff.GE.API.Controllers
         /// <param name="request">The request model for creating the item</param>
         /// <response code="200">Returns the ID of the created item</response>
         [HttpPost("AddItem")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
         public async Task<ActionResult<int>> AddItem([FromForm] ItemRequestModel request, CancellationToken cancellationToken)
         {
-            return Ok(await itemService.CreateItem(request, cancellationToken));
+            return Ok(await itemService.CreateItem(request, GetUserId(), cancellationToken));
         }
 
         /// <summary>
@@ -72,6 +77,7 @@ namespace BuyStuff.GE.API.Controllers
         /// <response code="404">If the item with the specified ID is not found</response>
         [HttpDelete("DeleteItem/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteItem(int id, CancellationToken cancellationToken)
         {
@@ -87,11 +93,18 @@ namespace BuyStuff.GE.API.Controllers
         /// <response code="404">If the item with the specified ID is not found</response>
         [HttpPut("UpdateItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateItem([FromForm] ItemRequestPutModel request, CancellationToken cancellationToken)
         {
             await itemService.UpdateItem(request, cancellationToken);
             return Ok();
+        }
+
+        private string GetUserId()
+        {
+            var x = _accessor.HttpContext.User.Identity as ClaimsIdentity;
+            return x.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
         }
     }
 }

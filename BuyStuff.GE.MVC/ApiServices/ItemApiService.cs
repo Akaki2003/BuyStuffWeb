@@ -1,37 +1,46 @@
 ﻿using BuyStuff.GE.Application.Items.Requests;
+using BuyStuff.GE.Domain.Users.Requests;
 using BuyStuff.GE.MVC.Models;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace BuyStuff.GE.MVC.ApiServices
 {
     public class ItemApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _accessor;
+        private readonly string Item = "Item";
+        string jwt = null;
+        
 
-        public ItemApiService(HttpClient httpClient, IOptions<BaseUriConfiguration> options)
+        public ItemApiService(HttpClient httpClient, IOptions<BaseUriConfiguration> options, IHttpContextAccessor accessor)
         {
             _httpClient = httpClient;
             httpClient.BaseAddress = new Uri(options.Value.BaseUri);
+            _accessor = accessor;
+            jwt = _accessor.HttpContext.Request.Cookies["jwt"];
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
         }
 
         public async Task<IEnumerable<ItemModel>> GetAllItems(CancellationToken cancellationToken)
         {
-            var result = await _httpClient.GetAsync("GetAllItems", cancellationToken);
+            var result = await _httpClient.GetAsync($"{Item}/GetAllItems", cancellationToken);
             return await result.Content.ReadFromJsonAsync<IList<ItemModel>>();
         }
 
         public async Task<ItemModel> GetItemById(int itemId, CancellationToken cancellationToken)
         {
-            var result = await _httpClient.GetAsync($"GetItemById?id={itemId}", cancellationToken);
+            var result = await _httpClient.GetAsync($"{Item}/GetItemById?id={itemId}", cancellationToken);
             return await result.Content.ReadFromJsonAsync<ItemModel>();
         }
 
         public async Task AddItem(ItemRequestModel item, CancellationToken cancellationToken)
         {
-            using (var client = _httpClient)
-            {
-
+            var jwt = _accessor.HttpContext.Request.Cookies["jwt"];
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
                 using (var content = new MultipartFormDataContent())
                 {
                     content.Add(new StringContent(item.Title), "Title");
@@ -56,17 +65,16 @@ namespace BuyStuff.GE.MVC.ApiServices
                             }, "Images", fileName);
                         }
 
-                    var response = await client.PostAsync("AddItem", content);
+                    var result = await _httpClient.PostAsync($"{Item}/AddItem", content, cancellationToken);
                 }
-            }
+            
         }
 
         public async Task UpdateItem(ItemEditModel item, CancellationToken cancellationToken)
         {
-            using (var client = _httpClient)
-            {
-
-                using (var content = new MultipartFormDataContent())
+            var jwt = _accessor.HttpContext.Request.Cookies["jwt"];
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            using (var content = new MultipartFormDataContent())
                 {
                     content.Add(new StringContent(item.Id.ToString()), "Id");
                     content.Add(new StringContent(item.Title), "Title");
@@ -93,16 +101,18 @@ namespace BuyStuff.GE.MVC.ApiServices
 
                         }
                     }
-
-                    var response = await client.PutAsync("UpdateItem", content);
+                var result = await _httpClient.PutAsync($"{Item}/UpdateItem", content, cancellationToken);
                 }
-            }
         }
+
 
         public async Task DeleteItem(int itemId, CancellationToken cancellationToken)
         {
-            await _httpClient.DeleteAsync($"DeleteItem/{itemId}", cancellationToken);
+            var jwt =_accessor.HttpContext.Request.Cookies["jwt"];
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            var result = await _httpClient.DeleteAsync($"{Item}/DeleteItem/{itemId}", cancellationToken);
         }
+
 
        
     }
